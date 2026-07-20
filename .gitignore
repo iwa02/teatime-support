@@ -1,4 +1,7 @@
-# 가상환경
+# 디스코드 토큰과 환경변수
+.env
+
+# 파이썬 가상환경
 .venv/
 venv/
 
@@ -8,12 +11,9 @@ __pycache__/
 *.pyo
 *.pyd
 
-# 비밀 환경변수
-.env
-
-# VS Code
+# VS Code 설정
 .vscode/
 
-# 운영체제 파일
+# 운영체제 임시 파일
 .DS_Store
 Thumbs.db
