@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ hidden_job.name }}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <header class="top-header">
+        <div>
+            <h1>🧙 히든 직업 상세 정보</h1>
+
+            <p>
+                획득 조건과 선행 퀘스트를 확인할 수 있습니다.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('hidden_job_list') }}"
+            class="gray-button"
+        >
+            목록으로
+        </a>
+    </header>
+
+    <main class="form-page-container">
+        <nav class="admin-navigation">
+            <a
+                href="{{ url_for('core_list') }}"
+                class="admin-nav-link"
+            >
+                💠 코어 관리
+            </a>
+
+            <a
+                href="{{ url_for('hidden_job_list') }}"
+                class="admin-nav-link active"
+            >
+                🧙 히든 직업
+            </a>
+        </nav>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <article class="hidden-detail-card">
+            <div class="hidden-detail-top">
+                <div class="hidden-detail-image">
+                    {% if hidden_job.image_filename %}
+                        <img
+                            src="{{ url_for(
+                                'static',
+                                filename='uploads/' + hidden_job.image_filename
+                            ) }}"
+                            alt="{{ hidden_job.name }}"
+                        >
+                    {% else %}
+                        <div class="empty-image">
+                            🧙
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="hidden-detail-heading">
+                    <span class="hidden-label">
+                        HIDDEN JOB
+                    </span>
+
+                    <h2>
+                        {{ hidden_job.name }}
+                    </h2>
+
+                    {% if hidden_job.category %}
+                        <span class="job-category-badge">
+                            {{ hidden_job.category }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="hidden-detail-sections">
+                <section class="hidden-info-section">
+                    <h3>✅ 획득 조건</h3>
+
+                    <div class="multiline-content">
+                        {{ hidden_job.conditions }}
+                    </div>
+                </section>
+
+                {% if hidden_job.prerequisite_quest %}
+                    <section class="hidden-info-section">
+                        <h3>📖 선행 퀘스트</h3>
+
+                        <div class="multiline-content">
+                            {{ hidden_job.prerequisite_quest }}
+                        </div>
+                    </section>
+                {% endif %}
+
+                {% if hidden_job.npc_name or hidden_job.npc_coordinates %}
+                    <section class="hidden-info-section">
+                        <h3>🧑 NPC 정보</h3>
+
+                        {% if hidden_job.npc_name %}
+                            <div class="detail-info-row">
+                                <span>NPC 이름</span>
+
+                                <strong>
+                                    {{ hidden_job.npc_name }}
+                                </strong>
+                            </div>
+                        {% endif %}
+
+                        {% if hidden_job.npc_coordinates %}
+                            <div class="coordinate-copy-box">
+                                <div>
+                                    <span>NPC 좌표</span>
+
+                                    <strong id="coordinateText">
+                                        {{ hidden_job.npc_coordinates }}
+                                    </strong>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    class="copy-button"
+                                    onclick="copyCoordinates()"
+                                >
+                                    📋 좌표 복사
+                                </button>
+                            </div>
+                        {% endif %}
+                    </section>
+                {% endif %}
+
+                {% if hidden_job.description %}
+                    <section class="hidden-info-section">
+                        <h3>📝 추가 설명</h3>
+
+                        <div class="multiline-content">
+                            {{ hidden_job.description }}
+                        </div>
+                    </section>
+                {% endif %}
+            </div>
+
+            <div class="bottom-buttons">
+                <a
+                    href="{{ url_for('hidden_job_list') }}"
+                    class="gray-button"
+                >
+                    목록으로
+                </a>
+
+                <a
+                    href="{{ url_for(
+                        'edit_hidden_job',
+                        job_id=hidden_job.id
+                    ) }}"
+                    class="edit-button"
+                >
+                    수정
+                </a>
+
+                <form
+                    method="post"
+                    action="{{ url_for(
+                        'delete_hidden_job',
+                        job_id=hidden_job.id
+                    ) }}"
+                    onsubmit="
+                        return confirm(
+                            '정말 이 히든 직업을 삭제할까요?'
+                        );
+                    "
+                >
+                    <button
+                        type="submit"
+                        class="delete-button"
+                    >
+                        삭제
+                    </button>
+                </form>
+            </div>
+        </article>
+    </main>
+
+    <script>
+        async function copyCoordinates() {
+            const coordinateElement =
+                document.getElementById("coordinateText");
+
+            const coordinateText =
+                coordinateElement.innerText.trim();
+
+            try {
+                await navigator.clipboard.writeText(
+                    coordinateText
+                );
+
+                alert("NPC 좌표가 복사되었습니다.");
+            } catch (error) {
+                const temporaryInput =
+                    document.createElement("textarea");
+
+                temporaryInput.value = coordinateText;
+
+                document.body.appendChild(
+                    temporaryInput
+                );
+
+                temporaryInput.select();
+
+                document.execCommand("copy");
+
+                temporaryInput.remove();
+
+                alert("NPC 좌표가 복사되었습니다.");
+            }
+        }
+    </script>
+</body>
+</html>

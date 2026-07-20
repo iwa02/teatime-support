@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>히든 직업 관리</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <header class="top-header">
+        <div>
+            <h1>🧙 히든 직업 관리</h1>
+
+            <p>
+                히든 직업의 조건, 선행 퀘스트와 NPC 좌표를 관리합니다.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-button"
+        >
+            로그아웃
+        </a>
+    </header>
+
+    <main class="main-container">
+        <nav class="admin-navigation">
+            <a
+                href="{{ url_for('core_list') }}"
+                class="admin-nav-link"
+            >
+                💠 코어 관리
+            </a>
+
+            <a
+                href="{{ url_for('hidden_job_list') }}"
+                class="admin-nav-link active"
+            >
+                🧙 히든 직업
+            </a>
+        </nav>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="toolbar">
+            <form
+                method="get"
+                class="search-form"
+            >
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="직업명, 조건, 퀘스트, NPC, 좌표 검색"
+                >
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    검색
+                </button>
+
+                {% if search %}
+                    <a
+                        href="{{ url_for('hidden_job_list') }}"
+                        class="gray-button"
+                    >
+                        초기화
+                    </a>
+                {% endif %}
+            </form>
+
+            <a
+                href="{{ url_for('create_hidden_job') }}"
+                class="primary-button"
+            >
+                + 히든 직업 등록
+            </a>
+        </section>
+
+        <section class="content-card">
+            <div class="section-title-row">
+                <h2>등록된 히든 직업</h2>
+
+                <span class="count-badge">
+                    {{ hidden_jobs|length }}개
+                </span>
+            </div>
+
+            {% if hidden_jobs %}
+                <div class="hidden-job-grid">
+                    {% for hidden_job in hidden_jobs %}
+                        <article class="hidden-job-card">
+                            <div class="hidden-job-image-box">
+                                {% if hidden_job.image_filename %}
+                                    <img
+                                        src="{{ url_for(
+                                            'static',
+                                            filename='uploads/' + hidden_job.image_filename
+                                        ) }}"
+                                        alt="{{ hidden_job.name }}"
+                                    >
+                                {% else %}
+                                    <div class="empty-image">
+                                        🧙
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="hidden-job-content">
+                                <div class="hidden-job-title-row">
+                                    <div>
+                                        <span class="hidden-label">
+                                            HIDDEN JOB
+                                        </span>
+
+                                        <h3>
+                                            {{ hidden_job.name }}
+                                        </h3>
+                                    </div>
+
+                                    {% if hidden_job.category %}
+                                        <span class="job-category-badge">
+                                            {{ hidden_job.category }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <dl class="hidden-job-summary">
+                                    {% if hidden_job.prerequisite_quest %}
+                                        <div>
+                                            <dt>선행 퀘스트</dt>
+
+                                            <dd>
+                                                {{ hidden_job.prerequisite_quest }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if hidden_job.npc_name %}
+                                        <div>
+                                            <dt>NPC</dt>
+
+                                            <dd>
+                                                {{ hidden_job.npc_name }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if hidden_job.npc_coordinates %}
+                                        <div>
+                                            <dt>NPC 좌표</dt>
+
+                                            <dd class="coordinate-text">
+                                                {{ hidden_job.npc_coordinates }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+                                </dl>
+
+                                <div class="card-buttons">
+                                    <a
+                                        href="{{ url_for(
+                                            'hidden_job_detail',
+                                            job_id=hidden_job.id
+                                        ) }}"
+                                        class="detail-button"
+                                    >
+                                        상세 보기
+                                    </a>
+
+                                    <a
+                                        href="{{ url_for(
+                                            'edit_hidden_job',
+                                            job_id=hidden_job.id
+                                        ) }}"
+                                        class="edit-button"
+                                    >
+                                        수정
+                                    </a>
+
+                                    <form
+                                        method="post"
+                                        action="{{ url_for(
+                                            'delete_hidden_job',
+                                            job_id=hidden_job.id
+                                        ) }}"
+                                        onsubmit="
+                                            return confirm(
+                                                '정말 이 히든 직업을 삭제할까요?'
+                                            );
+                                        "
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="delete-button"
+                                        >
+                                            삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+            {% else %}
+                <div class="empty-list">
+                    <div class="empty-list-icon">
+                        🧙
+                    </div>
+
+                    {% if search %}
+                        <h3>검색 결과가 없습니다.</h3>
+
+                        <p>
+                            다른 직업명이나 NPC 이름으로 검색해주세요.
+                        </p>
+
+                    {% else %}
+                        <h3>등록된 히든 직업이 없습니다.</h3>
+
+                        <p>
+                            히든 직업 등록 버튼을 눌러 추가해주세요.
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

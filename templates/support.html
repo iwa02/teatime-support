@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>길드 지원 - 코어 정보</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <style>
+        .public-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .public-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border: 1px solid rgba(126, 145, 255, 0.28);
+            border-radius: 999px;
+            background: rgba(78, 92, 170, 0.18);
+            color: #cfd7ff;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .support-navigation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid rgba(127, 145, 255, 0.15);
+            border-radius: 15px;
+            background: rgba(20, 26, 44, 0.82);
+        }
+
+        .support-nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 10px;
+            color: #b9c2df;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        .support-nav-link:hover {
+            color: #ffffff;
+            background: rgba(91, 106, 214, 0.16);
+        }
+
+        .support-nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(
+                135deg,
+                rgba(74, 88, 185, 0.9),
+                rgba(91, 69, 192, 0.9)
+            );
+            box-shadow: 0 8px 24px rgba(69, 71, 190, 0.22);
+        }
+
+        .public-quantity {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 14px 0;
+            padding: 14px 16px;
+            border: 1px solid rgba(64, 190, 230, 0.2);
+            border-radius: 12px;
+            background: rgba(26, 70, 94, 0.24);
+        }
+
+        .public-quantity span {
+            color: #c8d3eb;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .public-quantity strong {
+            color: #69dfff;
+            font-size: 18px;
+        }
+
+        .public-quantity.empty {
+            border-color: rgba(143, 151, 174, 0.18);
+            background: rgba(75, 82, 104, 0.2);
+        }
+
+        .public-quantity.empty strong {
+            color: #aab2c8;
+        }
+
+        .public-notice {
+            margin-bottom: 20px;
+            padding: 15px 18px;
+            border: 1px solid rgba(88, 180, 255, 0.2);
+            border-radius: 13px;
+            background: rgba(31, 79, 123, 0.16);
+            color: #c8d8ee;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 680px) {
+            .public-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-header public-header">
+        <div>
+            <h1>🎒 길드 지원</h1>
+
+            <p>
+                길드원이 요청할 수 있는 코어 정보와 현재 지원 가능 수량입니다.
+            </p>
+        </div>
+
+        <span class="public-badge">
+            👀 길드원 열람용
+        </span>
+    </header>
+
+
+    <main class="main-container">
+        <nav class="support-navigation">
+            <a
+                href="{{ url_for('support_page') }}"
+                class="support-nav-link active"
+            >
+                💠 코어 지원
+            </a>
+
+            <a
+                href="{{ url_for('support_hidden_jobs') }}"
+                class="support-nav-link"
+            >
+                🧙 히든 직업
+            </a>
+        </nav>
+
+
+        <div class="public-notice">
+            이 페이지는 길드원 열람 전용입니다.
+            코어 정보와 현재 지원 가능한 수량만 확인할 수 있습니다.
+        </div>
+
+
+        <section class="summary-grid">
+            <article class="summary-card">
+                <span class="summary-label">
+                    등록된 코어 종류
+                </span>
+
+                <strong class="summary-number">
+                    {{ cores|length }}
+                </strong>
+
+                <span class="summary-unit">
+                    종류
+                </span>
+            </article>
+
+            <article class="summary-card">
+                <span class="summary-label">
+                    전체 지원 가능 수량
+                </span>
+
+                <strong class="summary-number">
+                    {{ total_quantity }}
+                </strong>
+
+                <span class="summary-unit">
+                    개
+                </span>
+            </article>
+        </section>
+
+
+        <section class="toolbar">
+            <form
+                method="get"
+                action="{{ url_for('support_page') }}"
+                class="search-form"
+            >
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="코어 이름, 등급, 효과, 획득처 검색"
+                >
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    검색
+                </button>
+
+                {% if search %}
+                    <a
+                        href="{{ url_for('support_page') }}"
+                        class="gray-button"
+                    >
+                        초기화
+                    </a>
+                {% endif %}
+            </form>
+        </section>
+
+
+        <section class="content-card">
+            <div class="section-title-row">
+                <h2>지원 가능한 코어</h2>
+
+                <span class="count-badge">
+                    {{ cores|length }}개
+                </span>
+            </div>
+
+
+            {% if cores %}
+                <div class="core-grid">
+                    {% for core in cores %}
+                        <article class="core-card">
+                            <div class="core-image-box">
+                                {% if core.image_filename %}
+                                    <img
+                                        src="{{ url_for(
+                                            'static',
+                                            filename='uploads/' + core.image_filename
+                                        ) }}"
+                                        alt="{{ core.name }}"
+                                    >
+                                {% else %}
+                                    <div class="empty-image">
+                                        💠
+                                    </div>
+                                {% endif %}
+                            </div>
+
+
+                            <div class="core-card-content">
+                                <div class="core-title-row">
+                                    <h3>
+                                        {{ core.name }}
+                                    </h3>
+
+                                    <span class="grade-badge grade-{{ core.grade }}">
+                                        {{ core.grade }}
+                                    </span>
+                                </div>
+
+
+                                <div
+                                    class="
+                                        public-quantity
+                                        {% if core.quantity == 0 %}
+                                            empty
+                                        {% endif %}
+                                    "
+                                >
+                                    <span>
+                                        📦 지원 가능 수량
+                                    </span>
+
+                                    <strong>
+                                        {% if core.quantity > 0 %}
+                                            {{ core.quantity }}개
+                                        {% else %}
+                                            보유 없음
+                                        {% endif %}
+                                    </strong>
+                                </div>
+
+
+                                <dl class="core-info">
+                                    <div>
+                                        <dt>장착 제한</dt>
+
+                                        <dd>
+                                            Lv. {{ core.required_level }}
+                                        </dd>
+                                    </div>
+
+                                    <div>
+                                        <dt>부여 효과</dt>
+
+                                        <dd>
+                                            {{ core.effect }}
+                                        </dd>
+                                    </div>
+
+                                    {% if core.obtain_location %}
+                                        <div>
+                                            <dt>획득처</dt>
+
+                                            <dd>
+                                                {{ core.obtain_location }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+                                </dl>
+
+
+                                {% if core.description %}
+                                    <p class="core-description">
+                                        {{ core.description }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-list">
+                    <div class="empty-list-icon">
+                        💠
+                    </div>
+
+                    {% if search %}
+                        <h3>검색 결과가 없습니다.</h3>
+
+                        <p>
+                            다른 검색어로 다시 검색해주세요.
+                        </p>
+
+                        <a
+                            href="{{ url_for('support_page') }}"
+                            class="gray-button"
+                        >
+                            전체 코어 보기
+                        </a>
+                    {% else %}
+                        <h3>등록된 코어가 없습니다.</h3>
+
+                        <p>
+                            아직 지원 가능한 코어 정보가 없습니다.
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

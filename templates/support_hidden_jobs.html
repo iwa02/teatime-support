@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>길드 지원 - 히든 직업</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    <style>
+        .public-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .public-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 14px;
+            border: 1px solid rgba(126, 145, 255, 0.28);
+            border-radius: 999px;
+            background: rgba(78, 92, 170, 0.18);
+            color: #cfd7ff;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .support-navigation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid rgba(127, 145, 255, 0.15);
+            border-radius: 15px;
+            background: rgba(20, 26, 44, 0.82);
+        }
+
+        .support-nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 10px;
+            color: #b9c2df;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        .support-nav-link:hover {
+            color: #ffffff;
+            background: rgba(91, 106, 214, 0.16);
+        }
+
+        .support-nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(
+                135deg,
+                rgba(74, 88, 185, 0.9),
+                rgba(91, 69, 192, 0.9)
+            );
+            box-shadow: 0 8px 24px rgba(69, 71, 190, 0.22);
+        }
+
+        .job-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(310px, 1fr)
+            );
+            gap: 18px;
+        }
+
+        .job-card {
+            overflow: hidden;
+            border: 1px solid rgba(132, 145, 188, 0.14);
+            border-radius: 16px;
+            background: rgba(22, 29, 48, 0.88);
+        }
+
+        .job-image-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 210px;
+            border-bottom: 1px solid rgba(132, 145, 188, 0.14);
+            background: radial-gradient(
+                circle at center,
+                rgba(76, 102, 181, 0.25),
+                rgba(25, 32, 54, 0.95)
+            );
+        }
+
+        .job-image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .job-content {
+            padding: 20px;
+        }
+
+        .job-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .job-title-row h3 {
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .job-category {
+            flex-shrink: 0;
+            padding: 7px 10px;
+            border: 1px solid rgba(136, 123, 255, 0.24);
+            border-radius: 999px;
+            background: rgba(95, 79, 191, 0.2);
+            color: #d6d0ff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .job-info {
+            display: grid;
+            gap: 0;
+            margin: 0;
+        }
+
+        .job-info div {
+            display: grid;
+            grid-template-columns: 105px 1fr;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(132, 145, 188, 0.1);
+        }
+
+        .job-info div:last-child {
+            border-bottom: 0;
+        }
+
+        .job-info dt {
+            color: #aeb8d3;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .job-info dd {
+            margin: 0;
+            color: #e5e9f5;
+            line-height: 1.65;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+
+        .job-description {
+            margin: 16px 0 0;
+            padding: 14px 15px;
+            border-radius: 11px;
+            background: rgba(11, 16, 29, 0.42);
+            color: #c2cbe0;
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+
+        .public-notice {
+            margin-bottom: 20px;
+            padding: 15px 18px;
+            border: 1px solid rgba(88, 180, 255, 0.2);
+            border-radius: 13px;
+            background: rgba(31, 79, 123, 0.16);
+            color: #c8d8ee;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 680px) {
+            .public-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .job-info div {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-header public-header">
+        <div>
+            <h1>🎒 길드 지원</h1>
+
+            <p>
+                히든 직업의 획득 조건과 관련 NPC 정보를 확인합니다.
+            </p>
+        </div>
+
+        <span class="public-badge">
+            👀 길드원 열람용
+        </span>
+    </header>
+
+
+    <main class="main-container">
+        <nav class="support-navigation">
+            <a
+                href="{{ url_for('support_page') }}"
+                class="support-nav-link"
+            >
+                💠 코어 지원
+            </a>
+
+            <a
+                href="{{ url_for('support_hidden_jobs') }}"
+                class="support-nav-link active"
+            >
+                🧙 히든 직업
+            </a>
+        </nav>
+
+
+        <div class="public-notice">
+            이 페이지는 길드원 열람 전용입니다.
+            히든 직업의 조건, 선행 퀘스트, NPC와 좌표를 확인할 수 있습니다.
+        </div>
+
+
+        <section class="toolbar">
+            <form
+                method="get"
+                action="{{ url_for('support_hidden_jobs') }}"
+                class="search-form"
+            >
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="직업명, 조건, 퀘스트, NPC, 좌표 검색"
+                >
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    검색
+                </button>
+
+                {% if search %}
+                    <a
+                        href="{{ url_for('support_hidden_jobs') }}"
+                        class="gray-button"
+                    >
+                        초기화
+                    </a>
+                {% endif %}
+            </form>
+        </section>
+
+
+        <section class="content-card">
+            <div class="section-title-row">
+                <h2>히든 직업 정보</h2>
+
+                <span class="count-badge">
+                    {{ hidden_jobs|length }}개
+                </span>
+            </div>
+
+
+            {% if hidden_jobs %}
+                <div class="job-grid">
+                    {% for job in hidden_jobs %}
+                        <article class="job-card">
+                            <div class="job-image-box">
+                                {% if job.image_filename %}
+                                    <img
+                                        src="{{ url_for(
+                                            'static',
+                                            filename='uploads/' + job.image_filename
+                                        ) }}"
+                                        alt="{{ job.name }}"
+                                    >
+                                {% else %}
+                                    <div class="empty-image">
+                                        🧙
+                                    </div>
+                                {% endif %}
+                            </div>
+
+
+                            <div class="job-content">
+                                <div class="job-title-row">
+                                    <h3>{{ job.name }}</h3>
+
+                                    {% if job.category %}
+                                        <span class="job-category">
+                                            {{ job.category }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+
+                                <dl class="job-info">
+                                    <div>
+                                        <dt>획득 조건</dt>
+
+                                        <dd>
+                                            {{ job.conditions }}
+                                        </dd>
+                                    </div>
+
+                                    {% if job.prerequisite_quest %}
+                                        <div>
+                                            <dt>선행 퀘스트</dt>
+
+                                            <dd>
+                                                {{ job.prerequisite_quest }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if job.npc_name %}
+                                        <div>
+                                            <dt>NPC</dt>
+
+                                            <dd>
+                                                {{ job.npc_name }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if job.npc_coordinates %}
+                                        <div>
+                                            <dt>NPC 좌표</dt>
+
+                                            <dd>
+                                                {{ job.npc_coordinates }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+                                </dl>
+
+
+                                {% if job.description %}
+                                    <p class="job-description">
+                                        {{ job.description }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-list">
+                    <div class="empty-list-icon">
+                        🧙
+                    </div>
+
+                    {% if search %}
+                        <h3>검색 결과가 없습니다.</h3>
+
+                        <p>
+                            다른 검색어로 다시 검색해주세요.
+                        </p>
+
+                        <a
+                            href="{{ url_for('support_hidden_jobs') }}"
+                            class="gray-button"
+                        >
+                            전체 히든 직업 보기
+                        </a>
+                    {% else %}
+                        <h3>등록된 히든 직업이 없습니다.</h3>
+
+                        <p>
+                            아직 공개된 히든 직업 정보가 없습니다.
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

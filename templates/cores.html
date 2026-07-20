@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>코어 관리</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <!-- 상단 제목 영역 -->
+    <header class="top-header">
+        <div>
+            <h1>💠 코어 도감 관리</h1>
+
+            <p>
+                길드 지원용 코어 정보와 개인 보유 수량을 관리합니다.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="logout-button"
+        >
+            로그아웃
+        </a>
+    </header>
+
+
+    <main class="main-container">
+
+        <!-- 관리자 메뉴 -->
+        <nav class="admin-navigation">
+            <a
+                href="{{ url_for('core_list') }}"
+                class="admin-nav-link active"
+            >
+                💠 코어 관리
+            </a>
+
+            <a
+                href="{{ url_for('hidden_job_list') }}"
+                class="admin-nav-link"
+            >
+                🧙 히든 직업
+            </a>
+        </nav>
+
+
+        <!-- 알림 메시지 -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+
+        <!-- 코어 요약 정보 -->
+        <section class="summary-grid">
+            <article class="summary-card">
+                <span class="summary-label">
+                    등록된 코어 종류
+                </span>
+
+                <strong class="summary-number">
+                    {{ cores|length }}
+                </strong>
+
+                <span class="summary-unit">
+                    종류
+                </span>
+            </article>
+
+
+            <article class="summary-card">
+                <span class="summary-label">
+                    전체 보유 수량
+                </span>
+
+                <strong class="summary-number">
+                    {{ total_quantity }}
+                </strong>
+
+                <span class="summary-unit">
+                    개
+                </span>
+            </article>
+        </section>
+
+
+        <!-- 검색 및 등록 버튼 -->
+        <section class="toolbar">
+            <form
+                method="get"
+                action="{{ url_for('core_list') }}"
+                class="search-form"
+            >
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="코어 이름, 등급, 효과, 획득처 검색"
+                >
+
+                <button
+                    type="submit"
+                    class="secondary-button"
+                >
+                    검색
+                </button>
+
+                {% if search %}
+                    <a
+                        href="{{ url_for('core_list') }}"
+                        class="gray-button"
+                    >
+                        초기화
+                    </a>
+                {% endif %}
+            </form>
+
+
+            <a
+                href="{{ url_for('create_core') }}"
+                class="primary-button"
+            >
+                + 새 코어 등록
+            </a>
+        </section>
+
+
+        <!-- 등록된 코어 목록 -->
+        <section class="content-card">
+            <div class="section-title-row">
+                <h2>등록된 코어</h2>
+
+                <span class="count-badge">
+                    {{ cores|length }}개
+                </span>
+            </div>
+
+
+            {% if cores %}
+                <div class="core-grid">
+                    {% for core in cores %}
+                        <article class="core-card">
+
+                            <!-- 코어 이미지 -->
+                            <div class="core-image-box">
+                                {% if core.image_filename %}
+                                    <img
+                                        src="{{ url_for(
+                                            'static',
+                                            filename='uploads/' + core.image_filename
+                                        ) }}"
+                                        alt="{{ core.name }}"
+                                    >
+                                {% else %}
+                                    <div class="empty-image">
+                                        💠
+                                    </div>
+                                {% endif %}
+                            </div>
+
+
+                            <div class="core-card-content">
+
+                                <!-- 코어 이름과 등급 -->
+                                <div class="core-title-row">
+                                    <h3>
+                                        {{ core.name }}
+                                    </h3>
+
+                                    <span class="grade-badge grade-{{ core.grade }}">
+                                        {{ core.grade }}
+                                    </span>
+                                </div>
+
+
+                                <!-- 내 보유 수량 -->
+                                <div
+                                    class="
+                                        quantity-panel
+                                        {% if core.quantity == 0 %}
+                                            quantity-empty
+                                        {% endif %}
+                                    "
+                                >
+                                    <div class="quantity-header">
+                                        <span class="quantity-label">
+                                            📦 내 보유 수량
+                                        </span>
+
+                                        <strong class="quantity-value">
+                                            {% if core.quantity > 0 %}
+                                                {{ core.quantity }}개
+                                            {% else %}
+                                                보유 없음
+                                            {% endif %}
+                                        </strong>
+                                    </div>
+
+
+                                    <!-- 수량 변경 버튼 -->
+                                    <div class="quantity-buttons">
+
+                                        <!-- -10 -->
+                                        <form
+                                            method="post"
+                                            action="{{ url_for(
+                                                'adjust_core_quantity',
+                                                core_id=core.id
+                                            ) }}"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="amount"
+                                                value="-10"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="quantity-button"
+                                                {% if core.quantity == 0 %}
+                                                    disabled
+                                                {% endif %}
+                                            >
+                                                -10
+                                            </button>
+                                        </form>
+
+
+                                        <!-- -1 -->
+                                        <form
+                                            method="post"
+                                            action="{{ url_for(
+                                                'adjust_core_quantity',
+                                                core_id=core.id
+                                            ) }}"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="amount"
+                                                value="-1"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="quantity-button"
+                                                {% if core.quantity == 0 %}
+                                                    disabled
+                                                {% endif %}
+                                            >
+                                                -1
+                                            </button>
+                                        </form>
+
+
+                                        <!-- +1 -->
+                                        <form
+                                            method="post"
+                                            action="{{ url_for(
+                                                'adjust_core_quantity',
+                                                core_id=core.id
+                                            ) }}"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="amount"
+                                                value="1"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="quantity-button quantity-plus"
+                                            >
+                                                +1
+                                            </button>
+                                        </form>
+
+
+                                        <!-- +10 -->
+                                        <form
+                                            method="post"
+                                            action="{{ url_for(
+                                                'adjust_core_quantity',
+                                                core_id=core.id
+                                            ) }}"
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="amount"
+                                                value="10"
+                                            >
+
+                                            <button
+                                                type="submit"
+                                                class="quantity-button quantity-plus"
+                                            >
+                                                +10
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+
+
+                                <!-- 코어 상세 정보 -->
+                                <dl class="core-info">
+                                    <div>
+                                        <dt>장착 제한</dt>
+
+                                        <dd>
+                                            Lv. {{ core.required_level }}
+                                        </dd>
+                                    </div>
+
+
+                                    <div>
+                                        <dt>부여 효과</dt>
+
+                                        <dd>
+                                            {{ core.effect }}
+                                        </dd>
+                                    </div>
+
+
+                                    {% if core.obtain_location %}
+                                        <div>
+                                            <dt>획득처</dt>
+
+                                            <dd>
+                                                {{ core.obtain_location }}
+                                            </dd>
+                                        </div>
+                                    {% endif %}
+                                </dl>
+
+
+                                <!-- 추가 설명 -->
+                                {% if core.description %}
+                                    <p class="core-description">
+                                        {{ core.description }}
+                                    </p>
+                                {% endif %}
+
+
+                                <!-- 수정 및 삭제 -->
+                                <div class="card-buttons">
+                                    <a
+                                        href="{{ url_for(
+                                            'edit_core',
+                                            core_id=core.id
+                                        ) }}"
+                                        class="edit-button"
+                                    >
+                                        수정
+                                    </a>
+
+
+                                    <form
+                                        method="post"
+                                        action="{{ url_for(
+                                            'delete_core',
+                                            core_id=core.id
+                                        ) }}"
+                                        onsubmit="
+                                            return confirm(
+                                                '정말 이 코어를 삭제할까요?'
+                                            );
+                                        "
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="delete-button"
+                                        >
+                                            삭제
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+
+            {% else %}
+                <!-- 등록된 코어가 없을 때 -->
+                <div class="empty-list">
+                    <div class="empty-list-icon">
+                        💠
+                    </div>
+
+                    {% if search %}
+                        <h3>
+                            검색 결과가 없습니다.
+                        </h3>
+
+                        <p>
+                            다른 검색어로 다시 검색해주세요.
+                        </p>
+
+                        <a
+                            href="{{ url_for('core_list') }}"
+                            class="gray-button"
+                        >
+                            전체 코어 보기
+                        </a>
+
+                    {% else %}
+                        <h3>
+                            등록된 코어가 없습니다.
+                        </h3>
+
+                        <p>
+                            새 코어 등록 버튼을 눌러 등록해주세요.
+                        </p>
+
+                        <a
+                            href="{{ url_for('create_core') }}"
+                            class="primary-button"
+                        >
+                            + 첫 코어 등록하기
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

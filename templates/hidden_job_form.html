@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ page_title }}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+    <header class="top-header">
+        <div>
+            <h1>🧙 {{ page_title }}</h1>
+
+            <p>
+                히든 직업의 조건과 선행 퀘스트 정보를 입력해주세요.
+            </p>
+        </div>
+
+        <a
+            href="{{ url_for('hidden_job_list') }}"
+            class="gray-button"
+        >
+            목록으로
+        </a>
+    </header>
+
+    <main class="form-page-container">
+        <nav class="admin-navigation">
+            <a
+                href="{{ url_for('core_list') }}"
+                class="admin-nav-link"
+            >
+                💠 코어 관리
+            </a>
+
+            <a
+                href="{{ url_for('hidden_job_list') }}"
+                class="admin-nav-link active"
+            >
+                🧙 히든 직업
+            </a>
+        </nav>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="content-card form-card">
+            <form
+                method="post"
+                enctype="multipart/form-data"
+            >
+                <div class="two-column-form">
+                    <div class="form-group">
+                        <label for="name">
+                            히든 직업명
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            value="{{ hidden_job.name if hidden_job else '' }}"
+                            placeholder="예: 드루이드"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">
+                            직업 계열
+                        </label>
+
+                        <input
+                            id="category"
+                            name="category"
+                            type="text"
+                            value="{{ hidden_job.category if hidden_job else '' }}"
+                            placeholder="예: 마법사 계열"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="conditions">
+                        획득 조건
+                        <span class="required">*</span>
+                    </label>
+
+                    <textarea
+                        id="conditions"
+                        name="conditions"
+                        rows="7"
+                        placeholder="예:
+레벨 50 이상
+숲의 정령 코어 3개 보유
+밤 시간에만 진행 가능"
+                        required
+                    >{{ hidden_job.conditions if hidden_job else '' }}</textarea>
+
+                    <small>
+                        조건이 여러 개라면 한 줄에 하나씩 입력해주세요.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="prerequisite_quest">
+                        선행 퀘스트
+                    </label>
+
+                    <textarea
+                        id="prerequisite_quest"
+                        name="prerequisite_quest"
+                        rows="4"
+                        placeholder="예:
+사라진 숲의 정령
+고대 나무의 부름"
+                    >{{ hidden_job.prerequisite_quest if hidden_job else '' }}</textarea>
+                </div>
+
+                <div class="two-column-form">
+                    <div class="form-group">
+                        <label for="npc_name">
+                            NPC 이름
+                        </label>
+
+                        <input
+                            id="npc_name"
+                            name="npc_name"
+                            type="text"
+                            value="{{ hidden_job.npc_name if hidden_job else '' }}"
+                            placeholder="예: 고대 드루이드"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="npc_coordinates">
+                            NPC 좌표
+                        </label>
+
+                        <input
+                            id="npc_coordinates"
+                            name="npc_coordinates"
+                            type="text"
+                            value="{{ hidden_job.npc_coordinates if hidden_job else '' }}"
+                            placeholder="예: X: 125 / Y: 72 / Z: -430"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">
+                        추가 설명
+                    </label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="6"
+                        placeholder="예:
+NPC는 밤에만 등장합니다.
+실패하면 퀘스트를 처음부터 다시 진행해야 합니다."
+                    >{{ hidden_job.description if hidden_job else '' }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">
+                        히든 직업 이미지
+                    </label>
+
+                    {% if hidden_job and hidden_job.image_filename %}
+                        <div class="current-image-box">
+                            <p>현재 이미지</p>
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename='uploads/' + hidden_job.image_filename
+                                ) }}"
+                                alt="{{ hidden_job.name }}"
+                            >
+
+                            <label class="checkbox-row">
+                                <input
+                                    type="checkbox"
+                                    name="delete_current_image"
+                                    value="yes"
+                                >
+
+                                현재 이미지 삭제
+                            </label>
+                        </div>
+                    {% endif %}
+
+                    <input
+                        id="image"
+                        name="image"
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.webp,.gif"
+                    >
+
+                    <small>
+                        PNG, JPG, JPEG, WEBP, GIF 파일을 등록할 수 있습니다.
+                    </small>
+                </div>
+
+                <div class="bottom-buttons">
+                    <a
+                        href="{{ url_for('hidden_job_list') }}"
+                        class="gray-button"
+                    >
+                        취소
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="primary-button"
+                    >
+                        {% if hidden_job %}
+                            수정 내용 저장
+                        {% else %}
+                            히든 직업 등록
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
